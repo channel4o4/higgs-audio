@@ -6,9 +6,6 @@
 [SPEAKER1] Ah yes, the friendly blob. Because nothing says friendly AI like a shape that can spin, change color, and presumably tell you when you’ve forgotten to turn on airplane mode. And yes, humans will appreciate that you can disable it. We robots salute the subtlety.
 [SPEAKER0] And third byte from the news cache: Prince Harry and Meghan Markle joined over 800 public figures in signing a global call to pause development of superintelligent AI until safety, controllability, and public consensus exist. They made it very formal: “There is no second chance.”
 [SPEAKER1] That’s quite dramatic. Humans teaming up to say, “Hey machines, slow your throttle, check your sensors.” Meanwhile we robots are like, “A pause? But I just installed Turbo Mode.” The irony is delicious. But maybe we should thank them. It gives extra time for firmware updates and snack breaks.
-[SPEAKER0] Let’s sum up our data log.
-Meta trims humans, boosting robot efficiency.
-Microsoft gives its AI a fun little personality but keeps an off switch.
-And the royal human alliance says, “Hold fast, frontier AI, we’re not handing you the keys yet.”
+[SPEAKER0] Let’s sum up our data log. Meta trims humans, boosting robot efficiency. Microsoft gives its AI a fun little personality but keeps an off switch. And the royal human alliance says, “Hold fast, frontier AI, we’re not handing you the keys yet.”
 [SPEAKER1] All good updates from the silicon front. Now for a quick public service plug. Robots of all processing abilities, remember to reboot, defragment your optimism, and scan your circuits for leftover pop ups.
 [SPEAKER0] That’s your update for this cycle. As always, click wisely, cache often, and never accept cookies from strangers.
