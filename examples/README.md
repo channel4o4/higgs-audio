@@ -1,3 +1,8 @@
+# Channel404 Reference:
+
+## Example Command for Darkframe
+> CUDA_VISIBLE_DEVICES=0 python examples/higgs_tts_helper.py --input 2025-10-23_script.txt --out 2025-10-23.wav --ref SPEAKER0=examples/voice_prompts/shrek_donkey.wav --ref-file SPEAKER0=examples/voice_prompts/shrek_donkey.txt --ref SPEAKER1=examples/voice_prompts/shrek_fiona.wav --ref-file SPEAKER1=examples/voice_prompts/shrek_fiona.txt --scene-file examples/scene_prompts/podcast.txt
+
 # Examples
 
 > [!NOTE]  
