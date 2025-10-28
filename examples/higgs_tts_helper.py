@@ -25,8 +25,9 @@ import os
 import re
 import sys
 import random
+from collections import deque
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Deque, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 import soundfile as sf
@@ -145,15 +146,32 @@ def b64_of_file(path: str) -> str:
         return _b64.b64encode(f.read()).decode('utf-8')
 
 
-def build_chatml_sample(system_prompt: str, ref_audio_b64: Optional[str], ref_text: str, text: str) -> ChatMLSample:
+def build_chatml_sample(
+    system_prompt: str,
+    ref_audio_b64: Optional[str],
+    ref_text: str,
+    text: str,
+    history: Sequence[Tuple[str, str]],
+) -> ChatMLSample:
     messages = []
     if system_prompt:
         messages.append(Message(role='system', content=system_prompt))
     if ref_audio_b64:
-        messages.append(Message(role='user', content=ref_text))
+        messages.append(Message(role='user', content=ref_text or 'Reference audio for target voice.'))
         messages.append(Message(role='assistant', content=[AudioContent(raw_audio=ref_audio_b64, audio_url='')]))
+    for hist_text, hist_audio_b64 in history:
+        messages.append(Message(role='user', content=hist_text))
+        messages.append(Message(role='assistant', content=[AudioContent(raw_audio=hist_audio_b64, audio_url='')]))
     messages.append(Message(role='user', content=text))
     return ChatMLSample(messages=messages)
+
+
+def audio_array_to_b64(audio: np.ndarray, sr: int) -> str:
+    import io
+
+    buf = io.BytesIO()
+    sf.write(buf, audio, sr, format='WAV', subtype='FLOAT')
+    return base64.b64encode(buf.getvalue()).decode('utf-8')
 
 
 def normalize_to_lufs(audio: np.ndarray, sr: int, target_lufs: float = -14.0) -> np.ndarray:
@@ -181,6 +199,12 @@ def main(argv: Optional[List[str]] = None) -> int:
     p.add_argument('--top-k', type=int, default=50)
     p.add_argument('--max-chars', type=int, default=0)
     p.add_argument('--seed', type=int, default=42, help='Random seed for reproducibility')
+    p.add_argument(
+        '--speaker-buffer-size',
+        type=int,
+        default=2,
+        help='Number of previous utterances per speaker to include as audio/text context (0 to disable).',
+    )
 
     args = p.parse_args(argv)
 
@@ -226,13 +250,28 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
 
     chunks: List[np.ndarray] = []
+    speaker_histories: Dict[str, Deque[Tuple[str, str]]] = {}
     total_lines = len(lines)
     for idx, u in enumerate(lines, start=1):
         print(f"[{idx}/{total_lines}] Processing {u.speaker}: {u.text[:80]}...", flush=True)
         speaker_ref_audio = ref_audio_b64.get(u.speaker)
         speaker_ref_text = ref_texts.get(u.speaker, '')
+        history_deque: Optional[Deque[Tuple[str, str]]] = None
+        if args.speaker_buffer_size > 0:
+            history_deque = speaker_histories.setdefault(
+                u.speaker, deque(maxlen=args.speaker_buffer_size)
+            )
         for part in maybe_chunk(u.text, args.max_chars):
-            chatml = build_chatml_sample(system_prompt, speaker_ref_audio, speaker_ref_text, part)
+            history_for_prompt: Sequence[Tuple[str, str]] = ()
+            if history_deque is not None:
+                history_for_prompt = tuple(history_deque)
+            chatml = build_chatml_sample(
+                system_prompt,
+                speaker_ref_audio,
+                speaker_ref_text,
+                part,
+                history_for_prompt,
+            )
             resp = engine.generate(
                 chatml,
                 max_new_tokens=args.max_new_tokens,
@@ -252,7 +291,11 @@ def main(argv: Optional[List[str]] = None) -> int:
                 x_new = _np.linspace(0, 1, new_len, endpoint=False)
                 audio = _np.interp(x_new, x, audio).astype(np.float32)
             if audio is not None:
-                chunks.append(audio.astype(np.float32))
+                audio = audio.astype(np.float32)
+                chunks.append(audio)
+                if history_deque is not None:
+                    audio_b64 = audio_array_to_b64(audio, SAMPLE_RATE)
+                    history_deque.append((part, audio_b64))
 
     if not chunks:
         print("[WARN] No audio generated.")
