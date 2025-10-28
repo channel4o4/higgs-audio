@@ -171,6 +171,7 @@ def audio_array_to_b64(audio: np.ndarray, sr: int) -> str:
 
     buf = io.BytesIO()
     sf.write(buf, audio, sr, format='WAV', subtype='FLOAT')
+
     return base64.b64encode(buf.getvalue()).decode('utf-8')
 
 
