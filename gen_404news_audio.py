@@ -63,13 +63,13 @@ def run_tts(tts_script: str, transcript_path: Path) -> Path:
         sys.executable, tts_script,
         "--input", str(transcript_path),
         "--out", str(wav_path),
-        "--ref", "SPEAKER0=examples/voice_prompts/bbc_male_reporter.wav",
-        "--ref-file", "SPEAKER0=examples/voice_prompts/bbc_male_reporter.txt",
+        "--ref", "SPEAKER0=examples/voice_prompts/shrek_donkey.wav",
+        "--ref-file", "SPEAKER0=examples/voice_prompts/shrek_donkey.txt",
         "--seed", "42",
     ]
 
     env = os.environ.copy()
-    env["CUDA_VISIBLE_DEVICES"] = "0"
+    env["CUDA_VISIBLE_DEVICES"] = "3"
 
     print("Running TTS synthesis...")
     try:
